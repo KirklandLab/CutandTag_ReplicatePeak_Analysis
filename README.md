@@ -6,6 +6,7 @@
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/KirklandLab/CutandTag_ReplicatePeak_Analysis/total)
 ![GitHub commits since latest release](https://img.shields.io/github/commits-since/KirklandLab/CutandTag_ReplicatePeak_Analysis/latest)
 [![DOI](https://zenodo.org/badge/898608902.svg)](https://doi.org/10.5281/zenodo.15232319)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # CutandTag_ReplicatePeak_Analysis
 
