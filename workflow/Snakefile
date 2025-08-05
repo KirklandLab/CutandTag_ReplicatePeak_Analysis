@@ -1,8 +1,55 @@
 configfile: "config/config.yml"
 
-# Author: Kevin Boyd
-# Date: March 21, 2025
+##################################################################
+##                         Author Info                          ##
+##################################################################
+
+# Author: Kevin A. Boyd
+# Email: kevinboyd76@gmail.com
+# GitHub: https://github.com/kevinboyd76
+# Date Created: March 21, 2025
+# Last Modified: August 5, 2025
+# Version: 1.1.0
 # Adapted scripts from: https://github.com/SansamLab-Pipelines-Genomics/ReplicatePeakAnalyzer
+#
+# Description: This Snakemake workflow analyzes aligned Cut-and-Tag BAM files
+# to identify reproducible consensus peaks across replicates and conditions. It
+# performs peak calling on individual and merged BAMs, filters peaks by
+# replicate support, generates consensus peak sets, and produces BigWig tracks
+# for browser visualization. The pipeline also generates Euler plots to assess
+# overlap across replicates and conditions, and heatmaps centered on consensus
+# peak midpoints to visualize signal intensity across samples.
+#
+# This pipeline is designed to run downstream of the CutandTag_Alignment_QC
+# workflow (https://github.com/KirklandLab/CutandTag_Alignment_QC), which
+# produces aligned and filtered BAM files.
+
+##################################################################
+##                  Specific Steps in Pipeline                  ##
+##################################################################
+
+#  Steps:
+#  1) Merge replicate BAMs based on the `set` column in samples.csv
+#  2) Call peaks using MACS2 on both individual and merged BAMs
+#  3) Generate consensus peaks by filtering merged peaks based on replicate support
+#  4) Extract reads from merged BAMs over consensus peak regions
+#  5) Convert extracted reads to sorted BAM and BigWig formats
+#  6) Create Euler diagrams to visualize replicate and condition-level overlaps
+#  7) Calculate peak midpoints and overlaps across sets
+#  8) Generate heatmaps centered on consensus peak midpoints
+#     – Heatmap generation is toggleable in config.yml
+#     – Sample order is controlled by the `sampleOrder` field
+#  9) (Optional) Run standalone heatmap script on custom BED regions
+
+#  Outputs:
+#    • Merged BAMs for each replicate set
+#    • MACS2 peak files (individual and merged)
+#    • Consensus peak BED files (filtered by replicate overlap)
+#    • Sorted BAMs and BigWigs over consensus peaks
+#    • Euler diagrams (PDF)
+#    • Consensus midpoint BED files
+#    • Heatmaps of signal intensity (PDF)
+#    • Optional custom heatmaps from user-defined BEDs
 
 
 ##################################################################
@@ -56,7 +103,6 @@ if generate_unique_heatplot:
         "results/heatmap/Beds_Unique_Samples.gz",
         "results/heatmap/HeatPlots_Unique_Samples.png"
     ]
-
 
 ##################################################################
 ##                          Rule All                            ##
