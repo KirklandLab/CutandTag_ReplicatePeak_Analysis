@@ -31,6 +31,7 @@ chrom_sizes: "resources/mm10.chrom.sizes"
 ## Euler plot parameters
 EulerFontSize: 8                          # Base font size for the Euler plot
 EulerColors1: "#4477AA,#228833,#CCBB44"   # Comma-separated hex colors for the plot
+                                          # Extra colors: #EE6677,#AA3377,#66CCEE"
 EulerColors2: "#4477AA,#228833"           # Comma-separated hex colors for the plot
 EulerWidth: 5                             # Width of the PDF plot in inches
 EulerHeight: 5                            # Height of the PDF plot in inches
