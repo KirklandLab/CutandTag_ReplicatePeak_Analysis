@@ -210,8 +210,8 @@ sbatch --wrap="snakemake -j 999 --use-envmodules --latency-wait 60 --cluster-con
 
 ## **10) Citation**
 
-+ **Boyd, K.A.** (2025). *CutandTag_ReplicatePeak_Analysis: A reproducible Snakemake workflow for consensus peak calling and visualization in Cut-and-Tag data*. *Zenodo*. https://doi.org/10.5281/zenodo.16333991  
-+ [![DOI](https://zenodo.org/badge/873121124.svg)](https://doi.org/10.5281/zenodo.16333991)
++ **Boyd, K.A.** (2025). *CutandTag_ReplicatePeak_Analysis: A reproducible Snakemake workflow for consensus peak calling and visualization in Cut-and-Tag data*. *Zenodo*. https://doi.org/10.5281/zenodo.15232319  
++ [![DOI](https://zenodo.org/badge/898608902.svg)](https://doi.org/10.5281/zenodo.15232319)
 
 ---
 
