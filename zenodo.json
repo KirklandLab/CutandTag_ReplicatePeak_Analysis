@@ -1,5 +1,5 @@
 {
-  "title": "CutAndTag_ReplicatePeak_Analysis: A Snakemake Pipeline for Consensus Peak Calling and Visualization",
+  "title": "CutandTag_ReplicatePeak_Analysis: A reproducible Snakemake workflow for consensus peak calling and visualization in Cut-and-Tag data.",
   "upload_type": "software",
   "description": "CutAndTag_ReplicatePeak_Analysis is a Snakemake pipeline for downstream analysis of Cut-and-Tag sequencing data. It begins with filtered BAM files and performs reproducible peak calling, consensus peak set generation, and visualization of signal overlap and distribution. The pipeline includes support for MACS2 peak calling on individual and merged samples, consensus filtering by replicate support, and the generation of sorted BAMs, BigWigs, Euler plots, and high-resolution heatmaps centered on peak midpoints. It is intended for users who have already processed raw FASTQ files and need tools for reproducibility assessment and comparative analysis.",
   "creators": [
