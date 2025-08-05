@@ -11,15 +11,15 @@
 # CutandTag_ReplicatePeak_Analysis
 
 ![ReplicatePeaks](/images/replicatePeaks.png)
-- OpenAI. (2024). Scientific data visualization: Replicate peak analysis in bioinformatics [AI-generated image]. DALL-E. Retrieved from ChatGPT interface.
+*(Image generated with DALL-E. OpenAI, 2024: Scientific data visualization: Replicate peak analysis in bioinformatics)*
 
-# 1) Project Description
+## 1) Project Description
 
-**CutAndTag_ReplicatePeak_Analysis** is a Snakemake pipeline designed to perform downstream analysis on processed Cut-and-Tag sequencing data. Rather than starting from raw FASTQ reads, this pipeline starts with already aligned and filtered BAM files, focusing on the identification of reproducible peaks, the generation of consensus peak sets, and the visualization of overlaps and signal distributions across multiple samples or experimental conditions.
+**CutAndTag_ReplicatePeak_Analysis** is a Snakemake pipeline designed to perform downstream analysis on processed Cut-and-Tag sequencing data. Rather than starting from raw FASTQ reads, this pipeline starts with aligned BAM files, focusing on the identification of reproducible peaks, the generation of consensus peak sets, and the visualization of overlaps and signal distributions across multiple samples or experimental conditions.
 
-+ Note: If you are starting from raw FASTQ files, consider using the [CutandTag_Analysis_Snakemake](https://github.com/KirklandLab/CutandTag_Analysis_Snakemake) pipeline first. That pipeline handles the initial data processing steps—such as quality control, alignment, and basic filtering—providing you with the cleaned and aligned data that serve as the input for CutAndTag_ReplicatePeak_Analysis.
++ Note: If you are starting from raw FASTQ files, use the upstream [CutandTag_Alignment_QC](https://github.com/KirklandLab/CutandTag_Alignment_QC) pipeline first. That pipeline handles the initial data processing steps providing quality control analysis, alignment, and multiple signal tracks.
 
-## Key Features
+### **Key Features**
 
 - **Peak Calling with MACS2 on Individual and Merged Samples**:
   Each replicate is processed independently using MACS2 to call peaks. In parallel, biological replicates defined by the `Set` column in `samples.csv` are merged at the BAM level, and a second MACS2 peak calling is performed on the merged BAM to capture reproducible signal across replicates.
