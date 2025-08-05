@@ -28,7 +28,7 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "https://github.com/JK-Cobre-Help/CutandTag_ReplicatePeak_Analysis",
+      "identifier": "https://github.com/KirklandLab/CutandTag_Alignment_QC",
       "relation": "isSupplementTo",
       "scheme": "url"
     }
