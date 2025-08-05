@@ -13,6 +13,8 @@
 ![ReplicatePeaks](/images/replicatePeaks.png)
 *(Image generated with DALL-E. OpenAI, 2024: Scientific data visualization: Replicate peak analysis in bioinformatics)*
 
+--- 
+
 ## 1) Project Description
 
 **CutAndTag_ReplicatePeak_Analysis** is a Snakemake pipeline designed to perform downstream analysis on processed Cut-and-Tag sequencing data. Rather than starting from raw FASTQ reads, this pipeline starts with aligned BAM files, focusing on the identification of reproducible peaks, the generation of consensus peak sets, and the visualization of overlaps and signal distributions across multiple samples or experimental conditions.
