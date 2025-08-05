@@ -37,6 +37,8 @@
 + **Euler Plots of Replicate and Condition Overlaps**:
   + Euler diagrams are created to visualize how consensus peaks arise from replicate overlaps within a set.
   + Additional Euler plots show condition-level peak set relationships for each mark, providing clear insight into reproducibility and condition-specific differences. Euler plots color and size can be set in the `config.yml`.
+  + **Default colors**: #4477AA (blue), #228833 (green), #CCBB44 (mustard/golden yellow)
+  + **Extended pallet** (for >3 samples): #EE6677 (reddish coral), #AA3377 (violet/purple), #66CCEE (light cyan/sky blue)
 
 + **Midpoint and Overlap Quantification**:
   + Consensus peaks are processed to determine their midpoints and identify overlaps across all sets. This provides a standardized reference point for comparing distributions and regional enrichments.
