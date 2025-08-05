@@ -51,7 +51,6 @@ configfile: "config/config.yml"
 #    • Heatmaps of signal intensity (PDF)
 #    • Optional custom heatmaps from user-defined BEDs
 
-
 ##################################################################
 ##                    Define input functions                    ##
 ##################################################################
