@@ -16,7 +16,7 @@ call_peaks_with_macs2:
     error: results/errors/{rule}.{wildcards.sample}.slurm-%x.%A.%a.err
 
 merge_bams_per_set:
-    cpus-per-task: 2
+    cpus-per-task: 4
     mem: 16G
     time: 06:00:00
     name: "{rule}.{wildcards.Set}"
@@ -32,7 +32,7 @@ call_macs2_on_merged_bam:
     error: results/errors/{rule}.{wildcards.Set}.slurm-%x.%A.%a.err
 
 generate_consensus_peaks_by_overlap:
-    cpus-per-task: 4
+    cpus-per-task: 2
     mem: 32G
     time: 04:00:00
     name: "{rule}.{wildcards.Set}"
@@ -40,7 +40,7 @@ generate_consensus_peaks_by_overlap:
     error: results/errors/{rule}.{wildcards.Set}.slurm-%x.%A.%a.err
 
 extract_reads_for_consensus:
-    cpus-per-task: 2
+    cpus-per-task: 4
     mem: 16G
     time: 02:00:00
     name: "{rule}.{wildcards.Set}"
@@ -56,7 +56,7 @@ create_bigwig_from_consensus:
     error: results/errors/{rule}.{wildcards.Set}.slurm-%x.%A.%a.err
 
 make_euler_plot_of_overlaps_from_beds:
-    cpus-per-task: 4
+    cpus-per-task: 2
     mem: 16G
     time: 04:00:00
     name: "{rule}.{wildcards.Set}"
@@ -64,7 +64,7 @@ make_euler_plot_of_overlaps_from_beds:
     error: results/errors/{rule}.{wildcards.Set}.slurm-%x.%A.%a.err
 
 midpoint_and_peak_overlaps:
-    cpus-per-task: 4
+    cpus-per-task: 2
     mem: 16G
     time: 04:00:00
     name: "{rule}.midpoints"
@@ -80,7 +80,7 @@ generate_heatmap:
     error: results/errors/{rule}.heatmap.slurm-%x.%A.%a.err
 
 euler_plot_by_mark:
-    cpus-per-task: 4
+    cpus-per-task: 2
     mem: 16G
     time: 04:00:00
     name: "{rule}.{wildcards.mark}"
