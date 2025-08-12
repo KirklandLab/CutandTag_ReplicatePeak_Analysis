@@ -8,7 +8,7 @@ configfile: "config/config.yml"
 # Email: kevinboyd76@gmail.com
 # GitHub: https://github.com/kevinboyd76
 # Date Created: March 21, 2025
-# Last Modified: August 5, 2025
+# Last Modified: August 12, 2025
 # Version: 1.2.0
 # Adapted scripts from: https://github.com/SansamLab-Pipelines-Genomics/ReplicatePeakAnalyzer
 #
@@ -431,6 +431,7 @@ rule euler_plot_by_mark:
     envmodules:
         config["R"],
         config["bioconductor"]
+    threads: 2
     log:
         "results/logs/euler_plot_by_mark.{mark}.snakemake.log"
     shell:
