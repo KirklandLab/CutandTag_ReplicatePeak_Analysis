@@ -9,7 +9,7 @@ configfile: "config/config.yml"
 # GitHub: https://github.com/kevinboyd76
 # Date Created: March 21, 2025
 # Last Modified: August 5, 2025
-# Version: 1.1.0
+# Version: 1.2.0
 # Adapted scripts from: https://github.com/SansamLab-Pipelines-Genomics/ReplicatePeakAnalyzer
 #
 # Description: This Snakemake workflow analyzes aligned Cut-and-Tag BAM files
@@ -140,6 +140,7 @@ rule call_peaks_with_macs2:
         output_dir="results/macs2Peaks/"
     envmodules:
         config["macs2"]
+    threads: 4
     log:
         "results/logs/call_peaks_with_macs2.{sample}.snakemake.log"
     shell:
@@ -166,6 +167,7 @@ rule merge_bams_per_set:
         bai="results/mergedBam/{Set}_merged.bam.bai"
     envmodules:
         config["samtools"]
+    threads: 4
     log:
         "results/logs/merge_bams_per_set.{Set}.snakemake.log"
     shell:
@@ -177,12 +179,12 @@ rule merge_bams_per_set:
             for bam in {input}; do
                 base=$(basename $bam .bam)
                 sorted_bam=$TMP_DIR/${{base}}_sorted.bam
-                samtools sort -o $sorted_bam $bam
+                samtools sort -@ {threads} -o $sorted_bam $bam
                 TMP_SORTED_BAMS="$TMP_SORTED_BAMS $sorted_bam"
             done
     
-            samtools merge {output.bam} $TMP_SORTED_BAMS
-            samtools index {output.bam}
+            samtools merge -@ {threads} {output.bam} $TMP_SORTED_BAMS
+            samtools index -@ {threads} {output.bam}
             rm -r $TMP_DIR
         }} > {log} 2>&1
     """
@@ -204,6 +206,7 @@ rule call_macs2_on_merged_bam:
         outdir="results/mergedPeaks/"
     envmodules:
         config["macs2"]
+    threads: 4
     log:
         "results/logs/call_macs2_on_merged_bam.{Set}.snakemake.log"
     shell:
@@ -232,6 +235,7 @@ rule generate_consensus_peaks_by_overlap:
     envmodules:
         config["R"],
         config["bioconductor"]
+    threads: 2
     log:
         "results/logs/generate_consensus_peaks_by_overlap.{Set}.snakemake.log"
     shell:
@@ -253,12 +257,13 @@ rule extract_reads_for_consensus:
         index="results/consensusPeaks/{Set}_filtered.bam.bai"
     envmodules:
         config["samtools"]
+    threads: 4
     log:
         "results/logs/extract_reads_for_consensus.{Set}.snakemake.log"
     shell:
         """
-        samtools view -b {input.merged_bam} -L {input.consensus_bed} > {output.filtered_bam}
-        samtools index {output.filtered_bam} >> {log} 2>&1
+        samtools view -@ {threads} -b {input.merged_bam} -L {input.consensus_bed} > {output.filtered_bam}
+        samtools index -@ {threads} {output.filtered_bam} >> {log} 2>&1
         """
 
 
@@ -276,11 +281,12 @@ rule create_bigwig_from_consensus:
         genome_size=config["effective_genome_size"]
     envmodules:
         config["deeptools"]
+    threads: 4
     log:
         "results/logs/create_bigwig_from_consensus.{Set}.snakemake.log"
     shell:
         """
-        bamCoverage --bam {input.bam} \
+        bamCoverage -p {threads} --bam {input.bam} \
         --outFileName {output.bigwig} \
         --binSize {params.bin_size} \
         --effectiveGenomeSize {params.genome_size} \
@@ -310,6 +316,7 @@ rule make_euler_plot_of_overlaps_from_beds:
     envmodules:
         config["R"],
         config["bioconductor"]
+    threads: 2
     log:
         "results/logs/make_euler_plot_of_overlaps_from_beds.{Set}.snakemake.log"
     shell:
@@ -337,6 +344,7 @@ rule midpoint_and_peak_overlaps:
     envmodules:
         config["R"],
         config["bioconductor"]
+    threads: 2
     log:
         "results/logs/midpoint_and_peak_overlaps.snakemake.log"
     shell:
@@ -368,13 +376,14 @@ rule generate_heatmap:
         )
     envmodules:
         config["deeptools"]
+    threads: 8
     log:
         "results/logs/generate_heatmap.snakemake.log"
     shell:
         """
         computeMatrix reference-point -S {input.bigwigs} -R {input.midpoints} \
         --outFileName {output.matrix} -a {params.after_region} -b {params.before_region} \
-        --numberOfProcessors {params.processors} > {log} 2>&1
+        --numberOfProcessors {threads} > {log} 2>&1
 
         plotHeatmap -m {output.matrix} -out {output.heatmap} \
         --dpi 1000 --sortUsing sum --sortUsingSamples {params.sampleOrder} \
@@ -479,6 +488,7 @@ rule generate_unique_heatmap:
         )
     envmodules:
         config["deeptools"]
+    threads: 8
     log:
         "results/logs/generate_unique_heatmap.snakemake.log"
     shell:
@@ -488,7 +498,7 @@ rule generate_unique_heatmap:
             -R {input.uniqueBeds} \
             --outFileName {output.matrix} \
             -a {params.after_region} -b {params.before_region} \
-            --numberOfProcessors {params.processors} > {log} 2>&1
+            --numberOfProcessors {threads} > {log} 2>&1
 
         plotHeatmap \
             -m {output.matrix} \
