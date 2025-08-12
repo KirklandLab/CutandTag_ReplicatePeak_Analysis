@@ -9,7 +9,7 @@ configfile: "config/config.yml"
 # GitHub: https://github.com/kevinboyd76
 # Date Created: March 21, 2025
 # Last Modified: August 12, 2025
-# Version: 1.2.0
+# Version: 1.2.1
 # Adapted scripts from: https://github.com/SansamLab-Pipelines-Genomics/ReplicatePeakAnalyzer
 #
 # Description: This Snakemake workflow analyzes aligned Cut-and-Tag BAM files
