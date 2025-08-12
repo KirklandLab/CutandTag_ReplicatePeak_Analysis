@@ -74,7 +74,7 @@ midpoint_and_peak_overlaps:
 generate_heatmap:
     cpus-per-task: 8
     mem: 64G
-    time: 10:00:00
+    time: 08:00:00
     name: "{rule}.heatmap"
     output: results/logs/{rule}.heatmap.slurm-%x.%A.%a.log
     error: results/errors/{rule}.heatmap.slurm-%x.%A.%a.err
@@ -90,7 +90,7 @@ euler_plot_by_mark:
 generate_unique_heatmap:
     cpus-per-task: 8
     mem: 64G
-    time: 10:00:00
+    time: 08:00:00
     name: "{rule}.heatmap"
     output: results/logs/{rule}.heatmap.slurm-%x.%A.%a.log
     error: results/errors/{rule}.heatmap.slurm-%x.%A.%a.err
