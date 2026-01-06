@@ -303,7 +303,7 @@ rule create_bigwig_from_consensus:
 rule make_euler_plot_of_overlaps_from_beds:
     input:
         beds=lambda wc: [
-            f"results/macs2Peaks/{sample}_{QVAL}_peaks.narrowPeak"
+            f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak"
             for sample in filter_sample_by_set(wc.Set, samples_table)
         ]
     output:
@@ -336,7 +336,7 @@ rule make_euler_plot_of_overlaps_from_beds:
 
 rule midpoint_and_peak_overlaps:
     input:
-        reproducible_beds=expand("results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed", Set=list(set(samples_table["set"])))
+        reproducible_beds=expand(f"results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed", Set=list(set(samples_table["set"])))
     output:
         midpoint="results/overlaps/MidpointOverlaps.bed",
         peak="results/overlaps/PeakOverlaps.bed",
