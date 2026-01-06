@@ -114,7 +114,7 @@ rule all:
         expand("results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak", sample=samples_table.index, qvalue=QVAL),
         expand("results/mergedBam/{Set}_merged.bam", Set=list(set(samples_table["set"]))),
         expand("results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak", Set=list(set(samples_table["set"])), qvalue=QVAL),
-        expand("results/consensusPeaks/{Set}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
+        expand("results/consensusPeaks/{Set}_{qvaule}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_filtered.bam", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_consensus_peaks.bw", Set=list(set(samples_table["set"]))),
         expand("results/eulerPlot/{Set}_eulerPlot.pdf", Set=list(set(samples_table["set"]))),
@@ -231,7 +231,7 @@ rule generate_consensus_peaks_by_overlap:
             sample=filter_sample_by_set(wildcards.Set, samples_table), qvalue=QVAL
         )
     output:
-        consensus="results/consensusPeaks/{Set}_{qvaule}_consensus_peaks.bed"
+        consensus="results/consensusPeaks/{Set}_{qvalue}_consensus_peaks.bed"
     params:
         min_overlap=config["minNumberOfSampleOverlaps"],
         qvalue=QVAL
@@ -254,7 +254,7 @@ rule generate_consensus_peaks_by_overlap:
 rule extract_reads_for_consensus:
     input:
         merged_bam="results/mergedBam/{Set}_merged.bam",
-        consensus_bed="results/consensusPeaks/{Set}_consensus_peaks.bed"
+        consensus_bed="results/consensusPeaks/{Set}_{qvaule}_consensus_peaks.bed"
     output:
         filtered_bam="results/consensusPeaks/{Set}_filtered.bam",
         index="results/consensusPeaks/{Set}_filtered.bam.bai"
