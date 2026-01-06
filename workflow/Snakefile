@@ -78,6 +78,8 @@ def sets_for_mark_condition(mark, condition, df):
     subset = df[(df["mark"] == mark) & (df["condition"] == condition)]
     return list(set(subset["set"]))
 
+# qvalue string used in filenames (keeps formatting consistent)
+QVAL = str(config["macs2_qvalue"])
 
 ##################################################################
 ##                      Toggle HeatPlots                        ##
@@ -109,9 +111,9 @@ if generate_unique_heatplot:
 
 rule all:
     input:
-        expand("results/macs2Peaks/{sample}_0.05_peaks.narrowPeak", sample=samples_table.index),
+        expand("results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak", sample=samples_table.index, qvalue=QVAL),
         expand("results/mergedBam/{Set}_merged.bam", Set=list(set(samples_table["set"]))),
-        expand("results/mergedPeaks/{Set}_merged_0.05_peaks.narrowPeak", Set=list(set(samples_table["set"]))),
+        expand("results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak", Set=list(set(samples_table["set"])), qvalue=QVAL),
         expand("results/consensusPeaks/{Set}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_filtered.bam", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_consensus_peaks.bw", Set=list(set(samples_table["set"]))),
@@ -131,11 +133,11 @@ rule call_peaks_with_macs2:
     input:
         bam=lambda wildcards: samples_table.loc[wildcards.sample, "bam"]
     output:
-        peaks="results/macs2Peaks/{sample}_0.05_peaks.narrowPeak",
+        peaks="results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak",
         summary="results/macs2Peaks/{sample}_macs2Peak_summary.txt"
     params:
         genome=config["genome"],
-        qvalue=config["macs2_qvalue"],
+        qvalue=QVAL,
         sample_name="{sample}",
         output_dir="results/macs2Peaks/"
     envmodules:
@@ -198,10 +200,10 @@ rule call_macs2_on_merged_bam:
     input:
         bam="results/mergedBam/{Set}_merged.bam"
     output:
-        peaks="results/mergedPeaks/{Set}_merged_0.05_peaks.narrowPeak"
+        peaks="results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak"
     params:
         genome=config["genome"],
-        qvalue=config["macs2_qvalue"],
+        qvalue=QVAL,
         sample_name="{Set}_merged",
         outdir="results/mergedPeaks/"
     envmodules:
@@ -223,15 +225,16 @@ rule call_macs2_on_merged_bam:
 
 rule generate_consensus_peaks_by_overlap:
     input:
-        merged_peaks="results/mergedPeaks/{Set}_merged_0.05_peaks.narrowPeak",
+        merged_peaks="results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak",
         replicate_peaks=lambda wildcards: expand(
-            "results/macs2Peaks/{sample}_0.05_peaks.narrowPeak",
+            "results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak",
             sample=filter_sample_by_set(wildcards.Set, samples_table)
         )
     output:
         consensus="results/consensusPeaks/{Set}_consensus_peaks.bed"
     params:
-        min_overlap=config["minNumberOfSampleOverlaps"]
+        min_overlap=config["minNumberOfSampleOverlaps"],
+        qvalue=QVAL
     envmodules:
         config["R"],
         config["bioconductor"]
@@ -301,7 +304,7 @@ rule create_bigwig_from_consensus:
 rule make_euler_plot_of_overlaps_from_beds:
     input:
         beds=lambda wc: [
-            f"results/macs2Peaks/{sample}_0.05_peaks.narrowPeak"
+            f"results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak"
             for sample in filter_sample_by_set(wc.Set, samples_table)
         ]
     output:
@@ -313,6 +316,7 @@ rule make_euler_plot_of_overlaps_from_beds:
         pdf_width=config["EulerWidth"],
         pdf_height=config["EulerHeight"],
         set_names=lambda wc: ",".join(filter_sample_by_set(wc.Set, samples_table))
+        qvalue=QVAL
     envmodules:
         config["R"],
         config["bioconductor"]
