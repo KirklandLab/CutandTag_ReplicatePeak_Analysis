@@ -80,6 +80,8 @@ def sets_for_mark_condition(mark, condition, df):
 
 # qvalue string used in filenames (keeps formatting consistent)
 QVAL = str(config["macs2_qvalue"])
+wildcard_constraints:
+    qvalue=QVAL
 
 ##################################################################
 ##                      Toggle HeatPlots                        ##
@@ -228,7 +230,7 @@ rule generate_consensus_peaks_by_overlap:
         merged_peaks="results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak",
         replicate_peaks=lambda wildcards: expand(
             "results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak",
-            sample=filter_sample_by_set(wildcards.Set, samples_table, qvalue=QVAL)
+            sample=filter_sample_by_set(wildcards.Set, samples_table), qvalue=QVAL
         )
     output:
         consensus="results/consensusPeaks/{Set}_consensus_peaks.bed"
