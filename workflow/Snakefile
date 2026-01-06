@@ -225,16 +225,15 @@ rule call_macs2_on_merged_bam:
 
 rule generate_consensus_peaks_by_overlap:
     input:
-        merged_peaks="results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak",
+        merged_peaks=f"results/mergedPeaks/{{Set}}_merged_{QVAL}_peaks.narrowPeak",
         replicate_peaks=lambda wildcards: expand(
-            "results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak",
-            sample=filter_sample_by_set(wildcards.Set, samples_table), qvalue=QVAL
+            f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak",
+            sample=filter_sample_by_set(wildcards.Set, samples_table)
         )
     output:
         consensus=f"results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed"
     params:
-        min_overlap=config["minNumberOfSampleOverlaps"],
-        qvalue=QVAL
+        min_overlap=config["minNumberOfSampleOverlaps"]
     envmodules:
         config["R"],
         config["bioconductor"]
@@ -337,7 +336,7 @@ rule make_euler_plot_of_overlaps_from_beds:
 
 rule midpoint_and_peak_overlaps:
     input:
-        reproducible_beds=expand("results/consensusPeaks/{Set}_{qvalue}_consensus_peaks.bed", Set=list(set(samples_table["set"])), qvalue=QVAL)
+        reproducible_beds=expand("results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed", Set=list(set(samples_table["set"])))
     output:
         midpoint="results/overlaps/MidpointOverlaps.bed",
         peak="results/overlaps/PeakOverlaps.bed",
