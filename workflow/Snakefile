@@ -231,7 +231,7 @@ rule generate_consensus_peaks_by_overlap:
             sample=filter_sample_by_set(wildcards.Set, samples_table), qvalue=QVAL
         )
     output:
-        consensus="results/consensusPeaks/{Set}_consensus_peaks.bed"
+        consensus="results/consensusPeaks/{Set}_{qvaule}_consensus_peaks.bed"
     params:
         min_overlap=config["minNumberOfSampleOverlaps"],
         qvalue=QVAL
