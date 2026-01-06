@@ -228,7 +228,7 @@ rule generate_consensus_peaks_by_overlap:
         merged_peaks="results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak",
         replicate_peaks=lambda wildcards: expand(
             "results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak",
-            sample=filter_sample_by_set(wildcards.Set, samples_table)
+            sample=filter_sample_by_set(wildcards.Set, samples_table, qvalue=QVAL)
         )
     output:
         consensus="results/consensusPeaks/{Set}_consensus_peaks.bed"
@@ -304,7 +304,7 @@ rule create_bigwig_from_consensus:
 rule make_euler_plot_of_overlaps_from_beds:
     input:
         beds=lambda wc: [
-            f"results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak"
+            f"results/macs2Peaks/{sample}_{QVAL}_peaks.narrowPeak"
             for sample in filter_sample_by_set(wc.Set, samples_table)
         ]
     output:
@@ -316,7 +316,6 @@ rule make_euler_plot_of_overlaps_from_beds:
         pdf_width=config["EulerWidth"],
         pdf_height=config["EulerHeight"],
         set_names=lambda wc: ",".join(filter_sample_by_set(wc.Set, samples_table))
-        qvalue=QVAL
     envmodules:
         config["R"],
         config["bioconductor"]
