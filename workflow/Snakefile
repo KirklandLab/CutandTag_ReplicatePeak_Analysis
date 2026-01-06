@@ -114,7 +114,7 @@ rule all:
         expand("results/macs2Peaks/{sample}_{qvalue}_peaks.narrowPeak", sample=samples_table.index, qvalue=QVAL),
         expand("results/mergedBam/{Set}_merged.bam", Set=list(set(samples_table["set"]))),
         expand("results/mergedPeaks/{Set}_merged_{qvalue}_peaks.narrowPeak", Set=list(set(samples_table["set"])), qvalue=QVAL),
-        expand("results/consensusPeaks/{Set}_{qvalue}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
+        expand("results/consensusPeaks/{Set}_{qvalue}_consensus_peaks.bed", Set=list(set(samples_table["set"])), qvalue=QVAL),
         expand("results/consensusPeaks/{Set}_filtered.bam", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_consensus_peaks.bw", Set=list(set(samples_table["set"]))),
         expand("results/eulerPlot/{Set}_eulerPlot.pdf", Set=list(set(samples_table["set"]))),
@@ -411,7 +411,7 @@ def sets_for_mark_condition(mark, condition, df):
 def bed_paths_for_mark(mark, df):
     conditions = sorted(set(df[df["mark"] == mark]["condition"]))
     return [
-        f"results/consensusPeaks/{sets_for_mark_condition(mark, cond, df)[0]}_consensus_peaks.bed"
+        f"results/consensusPeaks/{sets_for_mark_condition(mark, cond, df)[0]}_{QVAL}_consensus_peaks.bed"
         for cond in conditions
     ]
 
