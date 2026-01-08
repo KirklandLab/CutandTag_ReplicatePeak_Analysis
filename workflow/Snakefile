@@ -113,8 +113,8 @@ rule all:
     input:
         expand(f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak", sample=samples_table.index),
         expand("results/mergedBam/{Set}_merged.bam", Set=list(set(samples_table["set"]))),
-        expand(f"results/mergedPeaks/{{Set}}_merged_{QVAL}_peaks.narrowPeak", Set=list(set(samples_table["set"]))),
-        expand(f"results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
+        expand("results/mergedPeaks/{Set}_merged_peaks.narrowPeak", Set=list(set(samples_table["set"]))),
+        expand(f"results/consensusPeaks/{Set}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_filtered.bam", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_consensus_peaks.bw", Set=list(set(samples_table["set"]))),
         expand("results/eulerPlot/{Set}_eulerPlot.pdf", Set=list(set(samples_table["set"]))),
@@ -203,6 +203,7 @@ rule call_macs2_on_merged_bam:
         peaks="results/mergedPeaks/{Set}_merged_peaks.narrowPeak"
     params:
         genome=config["genome"],
+        qvalue=QVAL,
         sample_name="{Set}_merged",
         outdir="results/mergedPeaks/"
     envmodules:
@@ -215,6 +216,10 @@ rule call_macs2_on_merged_bam:
         macs2 callpeak -t {input.bam} \
         -g {params.genome} -f BAMPE -n {params.sample_name}_{params.qvalue} \
         --outdir {params.outdir} -q {params.qvalue} --keep-dup all --nomodel > {log} 2>&1
+
+        # Rename MACS2 default output to the filename Snakemake expects
+        mv {params.outdir}/{params.sample_name}_{params.qvalue}_peaks.narrowPeak \
+           {output.peaks}
         """
 
 
@@ -409,7 +414,7 @@ def sets_for_mark_condition(mark, condition, df):
 def bed_paths_for_mark(mark, df):
     conditions = sorted(set(df[df["mark"] == mark]["condition"]))
     return [
-        f"results/consensusPeaks/{sets_for_mark_condition(mark, cond, df)[0]}_{QVAL}_consensus_peaks.bed"
+        f"results/consensusPeaks/{sets_for_mark_condition(mark, cond, df)[0]}_consensus_peaks.bed"
         for cond in conditions
     ]
 
