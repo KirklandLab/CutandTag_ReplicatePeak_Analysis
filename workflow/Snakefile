@@ -200,17 +200,16 @@ rule call_macs2_on_merged_bam:
     input:
         bam="results/mergedBam/{Set}_merged.bam"
     output:
-        peaks=f"results/mergedPeaks/{{Set}}_merged_{QVAL}_peaks.narrowPeak"
+        peaks="results/mergedPeaks/{Set}_merged_peaks.narrowPeak"
     params:
         genome=config["genome"],
-        qvalue=QVAL,
         sample_name="{Set}_merged",
         outdir="results/mergedPeaks/"
     envmodules:
         config["macs2"]
     threads: 4
     log:
-        f"results/logs/call_macs2_on_merged_bam.{{Set}}.{QVAL}.snakemake.log"
+        "results/logs/call_macs2_on_merged_bam.{Set}.snakemake.log"
     shell:
         """
         macs2 callpeak -t {input.bam} \
@@ -225,13 +224,13 @@ rule call_macs2_on_merged_bam:
 
 rule generate_consensus_peaks_by_overlap:
     input:
-        merged_peaks=f"results/mergedPeaks/{{Set}}_merged_{QVAL}_peaks.narrowPeak",
+        merged_peaks="results/mergedPeaks/{Set}_merged_peaks.narrowPeak",
         replicate_peaks=lambda wildcards: expand(
             f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak",
             sample=filter_sample_by_set(wildcards.Set, samples_table)
         )
     output:
-        consensus=f"results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed"
+        consensus="results/consensusPeaks/{Set}_consensus_peaks.bed"
     params:
         min_overlap=config["minNumberOfSampleOverlaps"]
     envmodules:
@@ -239,7 +238,7 @@ rule generate_consensus_peaks_by_overlap:
         config["bioconductor"]
     threads: 2
     log:
-        f"results/logs/generate_consensus_peaks_by_overlap.{{Set}}.{QVAL}.snakemake.log"
+        "results/logs/generate_consensus_peaks_by_overlap.{Set}.snakemake.log"
     shell:
         """
         Rscript scripts/filterConsensusFromMergedPeakSet.R {input.merged_peaks} {input.replicate_peaks} {params.min_overlap} {output.consensus} > {log} 2>&1
@@ -253,7 +252,7 @@ rule generate_consensus_peaks_by_overlap:
 rule extract_reads_for_consensus:
     input:
         merged_bam="results/mergedBam/{Set}_merged.bam",
-        consensus_bed=lambda wc: f"results/consensusPeaks/{wc.Set}_{QVAL}_consensus_peaks.bed"
+        consensus_bed=lambda wc: f"results/consensusPeaks/{wc.Set}_consensus_peaks.bed"
     output:
         filtered_bam="results/consensusPeaks/{Set}_filtered.bam",
         index="results/consensusPeaks/{Set}_filtered.bam.bai"
@@ -303,7 +302,7 @@ rule create_bigwig_from_consensus:
 rule make_euler_plot_of_overlaps_from_beds:
     input:
         beds=lambda wc: [
-            f"results/macs2Peaks/{sample}_{QVAL}_peaks.narrowPeak"
+            f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak"
             for sample in filter_sample_by_set(wc.Set, samples_table)
         ]
     output:
@@ -336,7 +335,7 @@ rule make_euler_plot_of_overlaps_from_beds:
 
 rule midpoint_and_peak_overlaps:
     input:
-        reproducible_beds=expand(f"results/consensusPeaks/{{Set}}_{QVAL}_consensus_peaks.bed", Set=list(set(samples_table["set"])))
+        reproducible_beds=expand("results/consensusPeaks/{Set}_consensus_peaks.bed", Set=list(set(samples_table["set"])))
     output:
         midpoint="results/overlaps/MidpointOverlaps.bed",
         peak="results/overlaps/PeakOverlaps.bed",
