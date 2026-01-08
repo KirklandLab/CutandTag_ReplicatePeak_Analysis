@@ -114,7 +114,7 @@ rule all:
         expand(f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak", sample=samples_table.index),
         expand("results/mergedBam/{Set}_merged.bam", Set=list(set(samples_table["set"]))),
         expand("results/mergedPeaks/{Set}_merged_peaks.narrowPeak", Set=list(set(samples_table["set"]))),
-        expand(f"results/consensusPeaks/{Set}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
+        expand("results/consensusPeaks/{Set}_consensus_peaks.bed", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_filtered.bam", Set=list(set(samples_table["set"]))),
         expand("results/consensusPeaks/{Set}_consensus_peaks.bw", Set=list(set(samples_table["set"]))),
         expand("results/eulerPlot/{Set}_eulerPlot.pdf", Set=list(set(samples_table["set"]))),
@@ -307,7 +307,7 @@ rule create_bigwig_from_consensus:
 rule make_euler_plot_of_overlaps_from_beds:
     input:
         beds=lambda wc: [
-            f"results/macs2Peaks/{{sample}}_{QVAL}_peaks.narrowPeak"
+            f"results/macs2Peaks/{sample}_{QVAL}_peaks.narrowPeak"
             for sample in filter_sample_by_set(wc.Set, samples_table)
         ]
     output:
