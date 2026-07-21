@@ -34,10 +34,15 @@ read_narrowpeak_as_granges <- function(path) {
   # Clean up strand: replace '.' with '*'
   dt$strand[!dt$strand %in% c("+", "-", "*")] <- "*"
   
-  gr <- GRanges(
-    seqnames = dt$chrom,
-    ranges   = IRanges(start = dt$start, end = dt$end),
-    strand   = dt$strand
+  # narrowPeak uses 0-based BED starts; GRanges uses 1-based starts.
+  gr <- makeGRangesFromDataFrame(
+    as.data.frame(dt),
+    seqnames.field = "chrom",
+    start.field = "start",
+    end.field = "end",
+    strand.field = "strand",
+    starts.in.df.are.0based = TRUE,
+    keep.extra.columns = FALSE
   )
   gr
 }
@@ -63,10 +68,11 @@ consensus_gr <- merged_gr[support_counts >= min_overlap]
 # ---- Write filtered peaks to output BED file ----
 
 # Create data.frame for writing as BED (chrom, start, end)
+# Convert the internal 1-based GRanges coordinates back to BED.
 consensus_bed <- data.frame(
-  seqnames = as.character(seqnames(consensus_gr)),
-  start    = start(consensus_gr),
-  end      = end(consensus_gr)
+  chrom = as.character(seqnames(consensus_gr)),
+  start = start(consensus_gr) - 1L,
+  end   = end(consensus_gr)
 )
 
 # Write without quotes and no row/column names
