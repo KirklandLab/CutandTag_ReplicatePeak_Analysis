@@ -2,7 +2,7 @@
 # Author: Kevin Boyd
 # Purpose: Generate midpoint and full overlap BED files from a list of reproducible peaks,
 #          and additionally compute unique sample midpoints (unique to only one sample).
-# Date Modified: 12/5/2024
+# Date Modified: 7/21/2026
 
 library(tidyverse)
 library(GenomicRanges)
@@ -23,15 +23,18 @@ if (!grepl("/$", output_dir)) {
 # Original Overlap and Midpoint Calculation
 # -----------------------------
 
-# Load BED files
-Beds.df <- lapply(input_beds, read.table, header = FALSE)
+# Import BED files using BED-aware coordinate conversion.
+Beds.gr <- lapply(input_beds, function(path) {
+    import(path, format = "BED")
+})
 
-# Create GRanges objects from each BED file
-Beds.gr <- lapply(Beds.df, makeGRangesFromDataFrame,
-                  seqnames.field = "V1", start.field = "V2", end.field = "V3")
-
-# Merge all GRanges and reduce them to form a unified set of ranges
-AllBeds.gr <- reduce(do.call("c", Beds.gr))
+# Merge genuinely overlapping ranges, but do not merge ranges that
+# are merely adjacent under BED interval semantics.
+AllBeds.gr <- reduce(
+    do.call("c", Beds.gr),
+    min.gapwidth = 0L,
+    ignore.strand = TRUE
+)
 
 # Generate overlap metadata:
 # For each input GRanges, check which ranges in AllBeds.gr overlap it.
@@ -43,10 +46,27 @@ peakOverlaps <- lapply(Beds.gr, function(gr) { AllBeds.gr %over% gr }) %>%
   set_names(gsub("_consensus_peaks.bed", "", basename(input_beds))) %>%
   { mcols(AllBeds.gr) <- .; AllBeds.gr }
 
+# Helper before calculating midpoints
+make_one_base_midpoints <- function(gr) {
+    if (length(gr) == 0L) {
+        return(gr)
+    }
+
+    # Convert the GRanges start back to a BED start, calculate the
+    # conventional BED midpoint, then construct a width-one GRanges.
+    bed_start <- start(gr) - 1L
+    bed_midpoint <- floor((bed_start + end(gr)) / 2)
+
+    ranges(gr) <- IRanges(
+        start = bed_midpoint + 1L,
+        width = rep.int(1L, length(gr))
+    )
+
+    gr
+}
+
 # Calculate midpoints for the consensus overlaps.
-midpointOverlaps <- peakOverlaps %>%
-  { start(.) <- rowMeans(cbind(start(.), end(.))); . } %>%
-  { end(.) <- start(.) + 1; . }
+midpointOverlaps <- make_one_base_midpoints(peakOverlaps)
 
 # Export the overall midpoint and full overlaps files to the specified output directory.
 export.bed(midpointOverlaps, paste0(output_dir, "MidpointOverlaps.bed"))
@@ -71,15 +91,8 @@ for(sample in colnames(overlap_df)) {
     unique_idx <- which(overlap_df[[sample]] & (rowSums(overlap_df) == 1))
     
     # Subset the consensus GRanges to obtain peaks unique to this sample.
-    unique_peaks <- peakOverlaps[unique_idx]
-    
-    # If there are any unique peaks, recalc their midpoint.
-    if (length(unique_peaks) > 0) {
-        new_midpoints <- round((start(unique_peaks) + end(unique_peaks)) / 2)
-        start(unique_peaks) <- new_midpoints
-        end(unique_peaks) <- new_midpoints + 1
-    }
-    
+    unique_peaks <- make_one_base_midpoints(peakOverlaps[unique_idx])
+
     # Define the output filename. The file will be placed in the consensus peaks folder.
     out_file <- file.path(consensus_dir, paste0(sample, "_unique_MP.bed"))
     
