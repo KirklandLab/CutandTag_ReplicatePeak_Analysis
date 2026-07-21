@@ -15,7 +15,7 @@ suppressPackageStartupMessages({
 # Parse command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
 
-if (length(args) < 3) {
+if (length(args) < 4) {
   stop("Usage: Rscript filterConsensusFromMergedPeakSet.R merged.narrowPeak rep1.narrowPeak rep2.narrowPeak ... min_overlap out.bed")
 }
 
