@@ -1,9 +1,10 @@
 #!/usr/bin/env Rscript
 
 # Author: Kevin Boyd
-# Date: March 22, 2025
+# Date: July 21, 2026
 # Purpose: Filter merged peak set to include only those peaks that overlap with a minimum
-# number of replicate peaks, and write the result as a BED file.
+# number of replicate peaks, and write the result as a BED file. Updated 2026 to account 
+# for the fact that narrowPeak uses 0-based BED starts and GRanges uses 1-based starts.
 
 suppressPackageStartupMessages({
   library(GenomicRanges)
