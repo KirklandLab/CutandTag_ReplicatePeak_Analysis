@@ -1,7 +1,7 @@
 ###############################################
 # Script name: makeEulerPlotOfBedOverlaps.R
 # Author: Kevin Boyd
-# Updated: March 22, 2025
+# Updated: August 13, 2026
 # Purpose: Generate an Euler plot of overlapping BED files.
 ###############################################
 
@@ -14,13 +14,13 @@ library(stringr)
 
 # Parse command-line args
 args <- commandArgs(trailingOnly = TRUE)
-bed_files  <- unlist(strsplit(args[1], ","))  
-set_names  <- unlist(strsplit(args[2], ","))  
+bed_files <- unlist(strsplit(args[1], ","))  
+set_names <- unlist(strsplit(args[2], ","))  
 output_rds <- args[3]
 output_pdf <- args[4]
-font_size  <- as.numeric(args[5])
-colors     <- strsplit(args[6], ",")[[1]]   
-pdf_width  <- as.numeric(args[7])
+font_size <- as.numeric(args[5])
+colors <- strsplit(args[6], ",")[[1]]   
+pdf_width <- as.numeric(args[7])
 pdf_height <- as.numeric(args[8])
 
 # Function to read a BED/narrowPeak file as GRanges (handles . strand)
@@ -40,9 +40,17 @@ read_bed_gr <- function(bed_file) {
 
   gr <- GRanges(
     seqnames = dt[[1]],
-    ranges   = IRanges(start = dt[[2]], end = dt[[3]]),
-    strand   = strand_col
+    ranges = IRanges(start = dt[[2]], end = dt[[3]]),
+    strand = strand_col
   )
+  # BED intervals are 0-based, half-open; GRanges intervals are
+  # 1-based, closed. Add 1 only to the BED start coordinate.
+  gr <- GRanges(
+    seqnames = dt[[1]],
+    ranges = IRanges(
+      start = dt[[2]] + 1L,
+      end = dt[[3]]),
+    strand = strand_col)
 
   if (ncol(dt) > 3) {
     mcols(gr) <- dt[, -(1:3)]
