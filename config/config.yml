@@ -1,10 +1,19 @@
 ## samples file
 samples_csv: "config/samples.csv"
 
-## turn on/off heat plots
+# -----------------------------------------------------------------------------------------
+# MASTER SWITCHES
+# -----------------------------------------------------------------------------------------
+# Pull samples directly from previous workflow samples.csv (proper naming convention needed to work)
+input_from_previous_workflow: False
+
+# Turn on/off heat plots
 heatplot_all: True
 heatplot_unique: True
 
+# -----------------------------------------------------------------------------------------
+# PEAK CALLING
+# -----------------------------------------------------------------------------------------
 ## genome-of-interest
 genome: "mm"
 # For human genome - "hs" / for mouse genome - "mm"
@@ -36,7 +45,18 @@ EulerColors2: "#4477AA,#228833"           # Comma-separated hex colors for the p
 EulerWidth: 5                             # Width of the PDF plot in inches
 EulerHeight: 5                            # Height of the PDF plot in inches
 
-## environment modules
+# -----------------------------------------------------------------------------------------
+# CONFIG NOTES
+# -----------------------------------------------------------------------------------------
+# 1)
+# 2)
+# 3)
+# 4)
+
+# -----------------------------------------------------------------------------------------
+# SOFTWARE MODULE VERSIONS
+# -----------------------------------------------------------------------------------------
+# Modules (for loading software dependencies)
 deeptools: "deeptools/3.4.3"
 macs2: "macs2/2.2.7.1"
 samtools: "samtools/1.14"
