@@ -1,61 +1,69 @@
 ## samples file
 samples_csv: "config/samples.csv"
 
-# -----------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------
 # MASTER SWITCHES
-# -----------------------------------------------------------------------------------------
-# Pull samples directly from previous workflow samples.csv (proper naming convention needed to work)
-input_from_previous_workflow: False
+# -------------------------------------------------------------------------------------------------------------------------
+# Pull samples directly from previous workflow samples.csv
+input_from_previous_workflow: False                                     # proper naming convention needed to work
+
+# Sample overlap for consensus peaks
+minNumberOfSampleOverlaps: 2                                            # choose number of individual sample peaks that need 
+                                                                        # to overlap with the merged signal file's peaks
 
 # Turn on/off heat plots
 heatplot_all: True
 heatplot_unique: True
 
-# -----------------------------------------------------------------------------------------
+# Sample order for heat plots
+sampleOrder: 1,2,3,4,5,6                                                # indicate which sample should set the order 
+                                                                        # of the midpoints.bed in heatmap [1 to nSamples])
+
+# -------------------------------------------------------------------------------------------------------------------------
 # PEAK CALLING
-# -----------------------------------------------------------------------------------------
-## genome-of-interest
-genome: "mm"
-# For human genome - "hs" / for mouse genome - "mm"
+# -------------------------------------------------------------------------------------------------------------------------
+# MACS2 parameters for peak calling
+genome: "mm"                                                            # Genome options - human: "hs" | mouse: "mm"
+macs2_qvalue: 0.05                                                      # q-value cutoff for macs2 significant peaks
 
-## sample order (indicate which sample should set the order of the midpoints.bed in heatmap [1 to nSamples])
-sampleOrder: 1,2,3,4,5,6
+# -------------------------------------------------------------------------------------------------------------------------
+# BIGWIG
+# -------------------------------------------------------------------------------------------------------------------------
+# bamCoverage parameters for BigWig generation
+binSize: 50                                                             # default bin = 50 
+effective_genome_size: 2652783500                                       # mm10 genome size - 2652783500 
+                                                                        # mm39 genome size - 2654621783
+                                                                        # GRCh38 genome size - 2913022398
 
-## effective genome size
-effective_genome_size: 2730871774
-# mm10 genome size - 2730871774       
-# GRCh38 genome size - 2913022398
+# -------------------------------------------------------------------------------------------------------------------------
+# BAM TO BED
+# -------------------------------------------------------------------------------------------------------------------------
+chrom_sizes: "resources/mm10.chrom.sizes"                               # Mouse (mm10) - "resources/mm10.chrom.sizes"
+                                                                        # Mouse (mm39) - "resources/mm39.chrom.sizes"
+                                                                        # Human (hg38) - "resources/hg38.chrom.sizes"
 
-## macs2 options
-macs2_qvalue: 0.05
-minNumberOfSampleOverlaps: 2
-
-## bamCoverage options
-binSize: 50
-
-## bedtobam
-chrom_sizes: "resources/mm10.chrom.sizes"
-# For human - "resources/hg38.chrom.sizes" / for mouse - "resources/mm10.chrom.sizes"
-
+# -------------------------------------------------------------------------------------------------------------------------
+# EULER PLOT SETTINGS
+# -------------------------------------------------------------------------------------------------------------------------
 ## Euler plot parameters
-EulerFontSize: 8                          # Base font size for the Euler plot
-EulerColors1: "#4477AA,#228833,#CCBB44"   # Comma-separated hex colors for the plot
-                                          # Extra colors: #EE6677,#AA3377,#66CCEE"
-EulerColors2: "#4477AA,#228833"           # Comma-separated hex colors for the plot
-EulerWidth: 5                             # Width of the PDF plot in inches
-EulerHeight: 5                            # Height of the PDF plot in inches
+EulerFontSize: 8                                                        # Base font size for the Euler plot
+EulerColors1: "#4477AA,#228833,#CCBB44"                                 # Comma-separated hex colors for the plot
+                                                                        # Extra colors: #EE6677,#AA3377,#66CCEE"
+EulerColors2: "#4477AA,#228833"                                         # Comma-separated hex colors for the plot
+EulerWidth: 5                                                           # Width of the PDF plot in inches
+EulerHeight: 5                                                          # Height of the PDF plot in inches
 
-# -----------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------
 # CONFIG NOTES
-# -----------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------
 # 1)
 # 2)
 # 3)
 # 4)
 
-# -----------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------
 # SOFTWARE MODULE VERSIONS
-# -----------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------------------------------
 # Modules (for loading software dependencies)
 deeptools: "deeptools/3.4.3"
 macs2: "macs2/2.2.7.1"
