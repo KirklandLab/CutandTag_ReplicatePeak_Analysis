@@ -7,9 +7,13 @@ samples_csv: "config/samples.csv"
 # Pull samples directly from previous workflow samples.csv
 input_from_previous_workflow: False                                     # proper naming convention needed to work
 
+# Path to the completed upstream workflow directory.
+previous_workflow_dir: "../CutandTag_Alignment_QC"
+
 # Sample overlap for consensus peaks
 minNumberOfSampleOverlaps: 2                                            # choose number of individual sample peaks that need 
-                                                                        # to overlap with the merged signal file's peaks
+                                                                        # to overlap with the merged signal file's peaks to 
+                                                                        # retain the merged signal file's peaks
 
 # Turn on/off heat plots
 heatplot_all: True
