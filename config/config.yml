@@ -1,11 +1,11 @@
 # -------------------------------------------------------------------------------------------------------------------------
-# MAIN TOGGLES
+# SAMPLE/WORKFLOW SETTINGS
 # -------------------------------------------------------------------------------------------------------------------------
 # Samples file
 samples_csv: "config/samples.csv"
 
 # Pull samples directly from previous workflow samples.csv
-input_from_previous_workflow: False                                     # proper naming convention needed to work
+input_from_previous_workflow: false                                     # proper naming convention needed to work
 
 # Path to the completed upstream workflow directory.
 previous_workflow_dir: "../CutandTag_Alignment_QC"
@@ -16,8 +16,8 @@ minNumberOfSampleOverlaps: 2                                            # choose
                                                                         # retain the merged signal file's peaks
 
 # Turn on/off heat plots
-heatplot_all: True
-heatplot_unique: True
+heatplot_all: true
+heatplot_unique: true
 
 # Sample order for heat plots
 sampleOrder: 1,2,3,4,5,6                                                # indicate which sample should set the order 
@@ -60,10 +60,14 @@ EulerHeight: 5                                                          # Height
 # -------------------------------------------------------------------------------------------------------------------------
 # CONFIG NOTES
 # -------------------------------------------------------------------------------------------------------------------------
-# 1)
-# 2)
-# 3)
-# 4)
+# 1) Use unquoted YAML booleans (true/false) and numeric values.
+# 2) Input mode: false uses samples_csv; true uses previous_workflow_dir and upstream analysis.bam files.
+# 3) Automatic grouping requires <mark>_rep<number>_<condition>, e.g., H3K27ac_rep1_C.
+# 4) Consensus support counts distinct biological replicates. Use at least 2 and no more than each set contains.
+# 5) BAMs must share the reference assembly and preprocessing. Combine technical lanes before analysis.
+# 6) sampleOrder selects tracks used to sort heatmap rows; columns follow set order in the CSV.
+# 7) MACS2 uses genome. Current CPM normalization ignores effective_genome_size; chrom_sizes is unused.
+# 8) Run from this workflow's root. Keep separate directories and saved configurations for different analyses.
 
 # -------------------------------------------------------------------------------------------------------------------------
 # SOFTWARE MODULE VERSIONS
