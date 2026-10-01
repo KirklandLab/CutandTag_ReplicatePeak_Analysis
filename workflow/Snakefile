@@ -57,28 +57,201 @@ configfile: "config/config.yml"
 
 import pandas as pd
 import os
+import re
+from pathlib import Path
 
-# Read the CSV file and set an index using the values in the "sample" column.
-samples_table = pd.read_csv(config["samples_csv"]).set_index("sample", drop=False)
+# Read sample metadata as text and check required fields.
+def read_samples_csv(path, required_columns):
+    if not path.is_file():
+        raise ValueError(f"Sample table not found: {path}")
 
-# define sets
+    df = pd.read_csv(path, dtype=str, keep_default_na=False)
+    missing = sorted(set(required_columns) - set(df.columns))
+
+    if missing:
+        raise ValueError(f"{path} is missing columns: {', '.join(missing)}")
+    if df.empty:
+        raise ValueError(f"{path} does not contain any samples.")
+
+    for column in required_columns:
+        if df[column].str.strip().eq("").any():
+            raise ValueError(f"{path} contains a blank value in '{column}'.")
+
+    if df["sample"].duplicated().any():
+        raise ValueError(f"Sample names must be unique in {path}.")
+
+    return df
+
+# Choose the upstream or manual sample table before building the DAG.
+USE_PREVIOUS_WORKFLOW = config.get("input_from_previous_workflow", False)
+
+if not isinstance(USE_PREVIOUS_WORKFLOW, bool):
+    raise ValueError(
+        "input_from_previous_workflow must be an unquoted YAML boolean."
+    )
+
+if USE_PREVIOUS_WORKFLOW:
+    upstream_path = config.get("previous_workflow_dir", "")
+
+    if not isinstance(upstream_path, str) or not upstream_path.strip():
+        raise ValueError(
+            "previous_workflow_dir must specify the completed upstream directory."
+        )
+
+    upstream_dir = Path(upstream_path).expanduser().resolve()
+    SOURCE_SAMPLES_CSV = upstream_dir / "config" / "samples.csv"
+    upstream_table = read_samples_csv(
+        SOURCE_SAMPLES_CSV, ["sample", "replicate"]
+    )
+    rows = []
+
+    # Everything after _rep<number>_ is the condition.
+    # Retain the complete sample name when constructing its BAM path.
+    for row in upstream_table.itertuples(index=False):
+        match = re.fullmatch(r"(.+)_rep([0-9]+)_(.+)", row.sample)
+
+        if match is None or len(
+            re.findall(r"(?=_rep[0-9]+_)", row.sample)
+        ) != 1:
+            raise ValueError(
+                f"Cannot group sample '{row.sample}'. "
+                "Expected <mark>_rep<number>_<condition>, "
+                "e.g. H3K27ac_rep1_C. "
+                "Use manual input for other naming conventions."
+            )
+
+        mark, replicate, condition = match.groups()
+        replicate = str(int(replicate))
+        csv_replicate = row.replicate.strip()
+
+        if (
+            not csv_replicate.isascii()
+            or not csv_replicate.isdigit()
+            or int(csv_replicate) != int(replicate)
+        ):
+            raise ValueError(
+                f"Replicate metadata does not match the sample name: {row.sample}"
+            )
+
+        rows.append({
+            "sample": row.sample,
+            "bam": str(
+                upstream_dir
+                / "results/alignment/bam/analysis"
+                / f"{row.sample}.analysis.bam"
+            ),
+            "set": f"{mark}_{condition}",
+            "mark": mark,
+            "condition": condition,
+            "replicate": replicate
+        })
+
+    samples_table = pd.DataFrame(rows)
+
+else:
+    SOURCE_SAMPLES_CSV = Path(config["samples_csv"]).expanduser().resolve()
+    samples_table = read_samples_csv(
+        SOURCE_SAMPLES_CSV,
+        ["sample", "bam", "set", "mark", "condition"]
+    )
+
+# Validate labels used in filenames and plotting arguments.
+for column in ["sample", "set", "mark", "condition"]:
+    valid = samples_table[column].str.fullmatch(
+        r"[A-Za-z0-9][A-Za-z0-9_.-]*"
+    )
+
+    if not valid.all():
+        raise ValueError(
+            f"'{column}' labels must start with a letter or number "
+            "and use only letters, numbers, _, -, or ."
+        )
+
+# Resolve BAM paths relative to this workflow's run directory.
+samples_table["bam"] = samples_table["bam"].map(
+    lambda p: str(Path(p).expanduser().resolve())
+)
+
+missing_bams = [
+    p for p in samples_table["bam"] if not Path(p).is_file()
+]
+
+if missing_bams:
+    raise ValueError("BAM files not found:\n" + "\n".join(missing_bams))
+
+if samples_table["bam"].duplicated().any():
+    raise ValueError(
+        "The same BAM cannot be listed as more than one independent sample."
+    )
+
+# Each set must represent one mark and condition, and vice versa.
+groups = samples_table[["set", "mark", "condition"]].drop_duplicates()
+
+if groups["set"].duplicated().any():
+    raise ValueError("Each set must contain only one mark and condition.")
+
+if groups.duplicated(["mark", "condition"]).any():
+    raise ValueError(
+        "Each mark/condition combination must map to exactly one set."
+    )
+
+# Check replicate identities when provided.
+# Automatic mode always supplies this column; it is optional in manual mode.
+if "replicate" in samples_table.columns:
+    samples_table["replicate"] = samples_table["replicate"].str.strip()
+
+    if samples_table["replicate"].eq("").any():
+        raise ValueError("Replicate labels cannot be blank.")
+
+    if samples_table.duplicated(["set", "replicate"]).any():
+        raise ValueError(
+            "Each biological replicate must appear only once within its set."
+        )
+
+# Check that the consensus threshold is possible for every set.
+MIN_OVERLAP = config["minNumberOfSampleOverlaps"]
+
+if (
+    isinstance(MIN_OVERLAP, bool)
+    or not isinstance(MIN_OVERLAP, int)
+    or MIN_OVERLAP < 1
+):
+    raise ValueError(
+        "minNumberOfSampleOverlaps must be a positive integer."
+    )
+
+set_sizes = samples_table.groupby("set", sort=False).size()
+too_small = set_sizes[set_sizes < MIN_OVERLAP]
+
+if not too_small.empty:
+    raise ValueError(
+        f"minNumberOfSampleOverlaps={MIN_OVERLAP} exceeds the sample count "
+        "in these sets: "
+        + ", ".join(
+            f"{name} ({count})" for name, count in too_small.items()
+        )
+    )
+
+# Preserve the order in which samples and sets appear in the CSV.
+samples_table = samples_table.set_index("sample", drop=False)
+
 all_sets = samples_table["set"]
-unique_sets_in_order = list(dict.fromkeys(all_sets))
+unique_sets_in_order = all_sets.drop_duplicates().tolist()
+unique_marks = samples_table["mark"].drop_duplicates().tolist()
+unique_conditions = samples_table["condition"].drop_duplicates().tolist()
 
-# define unique marks / conditions
-unique_marks = list(dict.fromkeys(samples_table["mark"]))
-unique_conditions = list(dict.fromkeys(samples_table["condition"]))
-
-# filter samples by their set
 def filter_sample_by_set(Set, samples_table):
-    return list(set(samples_table[samples_table["set"] == Set]["sample"]))
+    return samples_table.loc[
+        samples_table["set"] == Set, "sample"
+    ].tolist()
 
-# filter sets by condition
 def sets_for_mark_condition(mark, condition, df):
-    subset = df[(df["mark"] == mark) & (df["condition"] == condition)]
-    return list(set(subset["set"]))
+    subset = df[
+        (df["mark"] == mark) & (df["condition"] == condition)
+    ]
+    return subset["set"].drop_duplicates().tolist()
 
-# qvalue string used in filenames (keeps formatting consistent)
+# qvalue string used in filenames (keeps formatting consistent).
 QVAL = str(config["macs2_qvalue"])
 
 ##################################################################
@@ -405,10 +578,6 @@ rule generate_heatmap:
 # Get unique (mark, condition) combinations in order
 def mark_condition_combos(df):
     return sorted(set(zip(df["mark"], df["condition"])))
-
-# Get the sets that correspond to a mark+condition combo
-def sets_for_mark_condition(mark, condition, df):
-    return sorted(set(df[(df["mark"] == mark) & (df["condition"] == condition)]["set"]))
 
 # Build paths to the consensus peak BEDs for each condition of a mark
 def bed_paths_for_mark(mark, df):
